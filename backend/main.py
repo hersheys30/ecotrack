@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from .database import Base, SessionLocal, engine
 from .models import EmissionFactor
@@ -62,6 +64,13 @@ def _seed_emission_factors():
         db.close()
 
 
-@app.get("/")
-def root():
-    return {"message": "EcoTrack API is running"}
+@app.get("/health")
+def health():
+    """Load balancer / platform health check."""
+    return {"status": "ok"}
+
+
+# Serve the static frontend from the same origin (production / Docker). API routes are registered above.
+_frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
+if _frontend_dir.is_dir():
+    app.mount("/", StaticFiles(directory=str(_frontend_dir), html=True), name="frontend")

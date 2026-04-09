@@ -13,7 +13,14 @@ def _default_database_url() -> str:
     return "sqlite:///./ecotrack.db"
 
 
-DATABASE_URL = os.getenv("DATABASE_URL", _default_database_url())
+def _normalize_database_url(url: str) -> str:
+    # Render/Heroku-style URLs use postgres://; SQLAlchemy expects postgresql+psycopg2://
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg2://" + url[len("postgres://") :]
+    return url
+
+
+DATABASE_URL = _normalize_database_url(os.getenv("DATABASE_URL", _default_database_url()))
 
 # For PostgreSQL, recommended format:
 # postgresql+psycopg2://user:password@localhost:5432/ecotrack
