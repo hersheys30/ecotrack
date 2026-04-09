@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EcoTrack • Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>EcoTrack</h1>
+            <p>Carbon analytics</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a data-nav href="dashboard.html"><span class="dot"></span>Dashboard</a>
+          <a data-nav href="log.html"><span class="dot"></span>Log Activity</a>
+          <a data-nav href="reports.html"><span class="dot"></span>Reports</a>
+          <a data-nav href="settings.html" class="active"><span class="dot"></span>Settings</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="title">
+            <h2>Settings</h2>
+            <p>Client-side preferences for this browser.</p>
+          </div>
+          <div class="actions">
+            <button class="btn danger" id="btnLogout" type="button">Logout</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <section class="card col-8">
+            <div class="card-head">
+              <div>
+                <h3>API connection</h3>
+                <p class="hint">Where the frontend calls the FastAPI server.</p>
+              </div>
+            </div>
+            <div id="settingsStatus" class="notice" style="display:none"></div>
+
+            <div class="form">
+              <div class="field col-12">
+                <label for="apiUrl">API base URL</label>
+                <input class="input mono" id="apiUrl" placeholder="http://127.0.0.1:8001" />
+              </div>
+              <div class="field col-12">
+                <button class="btn primary" id="save" type="button">Save</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card col-4">
+            <div class="card-head">
+              <div>
+                <h3>Session</h3>
+                <p class="hint">Token is stored locally in this browser.</p>
+              </div>
+            </div>
+            <button class="btn" id="clearToken" type="button" style="width:100%">Clear token</button>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      const statusBox = document.getElementById("settingsStatus");
+      function setStatus(kind, msg) {
+        if (!msg) {
+          statusBox.style.display = "none";
+          return;
+        }
+        statusBox.style.display = "block";
+        statusBox.className = `notice ${kind === "err" ? "err" : kind === "ok" ? "ok" : ""}`;
+        statusBox.innerHTML = msg;
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        window.EcoTrackAuth.requireAuth();
+        window.EcoTrackAuth.setActivePageNav();
+        document.getElementById("btnLogout").addEventListener("click", window.EcoTrackAuth.logout);
+
+        const apiUrl = document.getElementById("apiUrl");
+        apiUrl.value = window.EcoTrackAPI.apiBase();
+
+        document.getElementById("save").addEventListener("click", () => {
+          const v = apiUrl.value.trim();
+          if (!v) return;
+          localStorage.setItem("ECOTRACK_API_BASE_URL", v);
+          setStatus("ok", "<b>Saved.</b> Reloading…");
+          setTimeout(() => location.reload(), 400);
+        });
+
+        document.getElementById("clearToken").addEventListener("click", () => {
+          window.EcoTrackAPI.setToken(null);
+          setStatus("ok", "<b>Cleared.</b> You’ll need to sign in again.");
+        });
+      });
+    </script>
+  </body>
+</html>
+

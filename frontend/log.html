@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EcoTrack • Log Activity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>EcoTrack</h1>
+            <p>Carbon analytics</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a data-nav href="dashboard.html"><span class="dot"></span>Dashboard</a>
+          <a data-nav href="log.html" class="active"><span class="dot"></span>Log Activity</a>
+          <a data-nav href="reports.html"><span class="dot"></span>Reports</a>
+          <a data-nav href="settings.html"><span class="dot"></span>Settings</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="title">
+            <h2>Log Activity</h2>
+            <p>Enter activity data and auto-calculate CO2e.</p>
+          </div>
+          <div class="actions">
+            <a class="btn" href="dashboard.html">Back to dashboard</a>
+            <button class="btn danger" id="btnLogout" type="button">Logout</button>
+          </div>
+        </div>
+
+        <div id="logStatus" class="notice" style="display:none"></div>
+
+        <div class="grid">
+          <section class="card col-8">
+            <div class="card-head">
+              <div>
+                <h3>New activity</h3>
+                <p class="hint">Uses the latest seeded emission factor for the selected scope and activity type.</p>
+              </div>
+            </div>
+
+            <form id="formLog" class="form">
+              <div class="field col-4">
+                <label for="scope">Scope</label>
+                <select id="scope">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+
+              <div class="field col-8">
+                <label for="activity_type">Activity type</label>
+                <select id="activity_type"></select>
+                <div class="hint" style="margin-top:6px; color:var(--muted); font-size:12px">
+                  Factor: <span class="mono" id="factorHint">—</span>
+                </div>
+              </div>
+
+              <div class="field col-4">
+                <label for="quantity">Quantity</label>
+                <input class="input mono" id="quantity" type="number" step="0.01" min="0" placeholder="e.g. 120" required />
+              </div>
+
+              <div class="field col-4">
+                <label for="unit">Unit</label>
+                <select id="unit">
+                  <option>kWh</option>
+                  <option>Wh</option>
+                  <option>MWh</option>
+                  <option>litre</option>
+                  <option>ml</option>
+                  <option>km</option>
+                  <option>m</option>
+                  <option>mi</option>
+                  <option>kg</option>
+                  <option>g</option>
+                  <option>tonne</option>
+                </select>
+              </div>
+
+              <div class="field col-4">
+                <label for="date">Date</label>
+                <input class="input mono" id="date" type="date" required />
+              </div>
+
+              <div class="field col-12">
+                <label for="notes">Notes</label>
+                <textarea id="notes" placeholder="Optional context (site, meter, trip purpose, invoice reference, etc.)"></textarea>
+              </div>
+
+              <div class="field col-12">
+                <button class="btn primary" type="submit">Calculate & Save</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card col-4">
+            <div class="card-head">
+              <div>
+                <h3>Result</h3>
+                <p class="hint">Calculated per your configured factors.</p>
+              </div>
+            </div>
+            <div class="stat">
+              <div class="kpi mono" id="calculated">—</div>
+              <div class="notice" style="margin-top:6px">
+                <b>Units:</b> EcoTrack will convert common units to match the factor unit (kWh, litre, km, kg, tonne).
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/log.js"></script>
+  </body>
+</html>
+

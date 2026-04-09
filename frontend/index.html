@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EcoTrack • Sign in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <section class="hero">
+          <div>
+            <div class="brand" style="padding:0 0 10px">
+              <div class="logo" aria-hidden="true"></div>
+              <div>
+                <h1>EcoTrack</h1>
+                <p>Multi-scope emissions analytics</p>
+              </div>
+            </div>
+            <h2>Track Scope 1, 2 & 3 emissions with clarity.</h2>
+            <p>
+              Log activity, calculate CO2e instantly, and visualize trends across scopes. Built for teams that need clean
+              reporting and audit-friendly records.
+            </p>
+            <div class="mini">
+              <span class="tag">JWT auth</span>
+              <span class="tag">Scope dashboards</span>
+              <span class="tag">CSV exports</span>
+              <span class="tag">Unit conversions</span>
+            </div>
+          </div>
+
+          <div class="notice" style="margin-top:16px">
+            <b>Tip:</b> API URL is configurable. Current: <span class="mono" id="apiUrlLabel"></span>
+          </div>
+        </section>
+
+        <section class="auth-panel">
+          <h3>Welcome back</h3>
+          <p class="muted">Sign in, or create an account in seconds.</p>
+
+          <div class="switch">
+            <button class="seg active" id="segLogin" type="button">Login</button>
+            <button class="seg" id="segRegister" type="button">Register</button>
+          </div>
+
+          <div id="status" class="notice" style="display:none"></div>
+
+          <form id="form" class="form" autocomplete="on" style="margin-top:10px">
+            <div class="field col-12" id="fieldName" style="display:none">
+              <label for="name">Name</label>
+              <input class="input" id="name" placeholder="Your name" />
+            </div>
+
+            <div class="field col-12">
+              <label for="email">Email</label>
+              <input class="input" id="email" type="email" placeholder="you@company.com" required />
+            </div>
+
+            <div class="field col-12">
+              <label for="password">Password</label>
+              <input class="input" id="password" type="password" placeholder="At least 8 characters" required />
+            </div>
+
+            <div class="field col-12" id="fieldRole" style="display:none">
+              <label for="role">Role</label>
+              <select id="role">
+                <option>Viewer</option>
+                <option>Analyst</option>
+                <option>Admin</option>
+              </select>
+            </div>
+
+            <div class="field col-12" id="fieldOrg" style="display:none">
+              <label for="org">Organisation</label>
+              <input class="input" id="org" placeholder="Org name (optional)" />
+            </div>
+
+            <div class="field col-12">
+              <button class="btn primary" id="submitBtn" type="submit">Login</button>
+            </div>
+          </form>
+
+          <div class="notice" style="margin-top:10px">
+            <b>Need to change API URL?</b>
+            <div style="margin-top:8px; display:flex; gap:10px; align-items:center">
+              <input class="input mono" id="apiUrl" placeholder="http://127.0.0.1:8001" />
+              <button class="btn" type="button" id="saveApiUrl">Save</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      const statusBox = document.getElementById("status");
+      const segLogin = document.getElementById("segLogin");
+      const segRegister = document.getElementById("segRegister");
+      const submitBtn = document.getElementById("submitBtn");
+      const fieldName = document.getElementById("fieldName");
+      const fieldRole = document.getElementById("fieldRole");
+      const fieldOrg = document.getElementById("fieldOrg");
+
+      let mode = "login";
+
+      function setStatus(kind, msg) {
+        if (!msg) {
+          statusBox.style.display = "none";
+          return;
+        }
+        statusBox.style.display = "block";
+        statusBox.className = `notice ${kind === "err" ? "err" : kind === "ok" ? "ok" : ""}`;
+        statusBox.innerHTML = msg;
+      }
+
+      function setMode(next) {
+        mode = next;
+        segLogin.classList.toggle("active", mode === "login");
+        segRegister.classList.toggle("active", mode === "register");
+        fieldName.style.display = mode === "register" ? "block" : "none";
+        fieldRole.style.display = mode === "register" ? "block" : "none";
+        fieldOrg.style.display = mode === "register" ? "block" : "none";
+        submitBtn.textContent = mode === "register" ? "Create account" : "Login";
+        setStatus("", "");
+      }
+
+      segLogin.addEventListener("click", () => setMode("login"));
+      segRegister.addEventListener("click", () => setMode("register"));
+
+      document.getElementById("apiUrlLabel").textContent = window.EcoTrackAPI.apiBase();
+      document.getElementById("apiUrl").value = window.EcoTrackAPI.apiBase();
+      document.getElementById("saveApiUrl").addEventListener("click", () => {
+        const v = document.getElementById("apiUrl").value.trim();
+        if (!v) return;
+        localStorage.setItem("ECOTRACK_API_BASE_URL", v);
+        setStatus("ok", `<b>Saved.</b> Reloading…`);
+        setTimeout(() => location.reload(), 400);
+      });
+
+      // If already logged in, go straight to dashboard
+      if (window.EcoTrackAPI.getToken()) {
+        location.href = "dashboard.html";
+      }
+
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setStatus("", "");
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        try {
+          if (mode === "login") {
+            await window.EcoTrackAuth.login(email, password);
+            return;
+          }
+          const name = document.getElementById("name").value.trim() || "User";
+          const role = document.getElementById("role").value;
+          const organisation = document.getElementById("org").value.trim() || null;
+          await window.EcoTrackAuth.register({ name, email, password, role, organisation });
+          setStatus("ok", `<b>Account created.</b> Now log in with the same credentials.`);
+          setMode("login");
+          document.getElementById("password").value = "";
+        } catch (err) {
+          setStatus("err", `<b>Authentication failed.</b> ${err.message || err}`);
+        }
+      });
+    </script>
+  </body>
+</html>
+

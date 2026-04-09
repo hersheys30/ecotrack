@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EcoTrack • Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>EcoTrack</h1>
+            <p>Carbon analytics</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <a data-nav href="dashboard.html" class="active"><span class="dot"></span>Dashboard</a>
+          <a data-nav href="log.html"><span class="dot"></span>Log Activity</a>
+          <a data-nav href="reports.html"><span class="dot"></span>Reports</a>
+          <a data-nav href="settings.html"><span class="dot"></span>Settings</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="row">
+            <span class="pill"><span class="spark"></span> API connected</span>
+            <span class="mono" style="font-size:11px; opacity:.8" id="apiBase"></span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="title">
+            <h2>Dashboard</h2>
+            <p>Overview across GHG Protocol scopes.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="btnRefresh" type="button">Refresh</button>
+            <button class="btn primary" id="btnQuickLog" type="button">Quick log</button>
+            <button class="btn danger" id="btnLogout" type="button">Logout</button>
+          </div>
+        </div>
+
+        <div id="dashStatus" class="notice" style="display:none"></div>
+
+        <div class="grid">
+          <section class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Total emissions</h3>
+                <p class="hint">Scope 1 + 2 + 3 (kgCO2e)</p>
+              </div>
+            </div>
+            <div class="stat">
+              <div class="hide-while-loading">
+                <div class="kpi mono" id="kpiTotal">—</div>
+                <div class="substats">
+                  <span class="chip"><span class="swatch" style="background:#8a9e6e"></span> <b>Scope 1</b> <span class="mono" id="chipS1">—</span></span>
+                  <span class="chip"><span class="swatch" style="background:#a9c087"></span> <b>Scope 2</b> <span class="mono" id="chipS2">—</span></span>
+                  <span class="chip"><span class="swatch" style="background:#6e8a9e"></span> <b>Scope 3</b> <span class="mono" id="chipS3">—</span></span>
+                </div>
+              </div>
+              <div class="show-while-loading" style="display:none">
+                <div class="skeleton skeleton-kpi"></div>
+                <div class="substats" style="margin-top:10px">
+                  <div class="skeleton skeleton-chip"></div>
+                  <div class="skeleton skeleton-chip"></div>
+                  <div class="skeleton skeleton-chip"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card col-8">
+            <div class="card-head">
+              <div>
+                <h3>Emissions by scope over time</h3>
+                <p class="hint">Stacked monthly totals</p>
+              </div>
+            </div>
+            <div style="height:320px">
+              <canvas id="barByScope"></canvas>
+            </div>
+          </section>
+
+          <section class="card col-4">
+            <div class="card-head">
+              <div>
+                <h3>Breakdown by activity</h3>
+                <p class="hint">Top activity types</p>
+              </div>
+            </div>
+            <div style="height:320px">
+              <canvas id="pieActivity"></canvas>
+            </div>
+          </section>
+
+          <section class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Monthly trend</h3>
+                <p class="hint">Total CO2e per month</p>
+              </div>
+            </div>
+            <div style="height:260px">
+              <canvas id="lineTrend"></canvas>
+            </div>
+          </section>
+
+          <section class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Recent activity</h3>
+                <p class="hint">Last 10 logged activities</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center">
+                <button class="btn primary" type="button" id="btnQuickLog2">Quick log</button>
+                <a class="btn" href="log.html">Full form</a>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Scope</th>
+                  <th>Activity</th>
+                  <th>Quantity</th>
+                  <th>CO2e</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recentBody"></tbody>
+            </table>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="quickModal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Quick log activity">
+        <div class="modal-head">
+          <div>
+            <h3>Quick log</h3>
+            <div class="hint">Save an activity without leaving the dashboard.</div>
+          </div>
+          <div style="display:flex; gap:10px">
+            <button class="btn" type="button" id="btnModalClose">Close</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div id="quickStatus" class="notice" style="display:none"></div>
+          <form id="quickForm" class="form">
+            <div class="field col-3">
+              <label for="q_scope">Scope</label>
+              <select id="q_scope">
+                <option value="1">1</option>
+                <option value="2" selected>2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+            <div class="field col-6">
+              <label for="q_activity">Activity type</label>
+              <select id="q_activity"></select>
+              <div class="hint" style="margin-top:6px; color:var(--muted); font-size:12px">
+                Factor: <span class="mono" id="q_factorHint">—</span>
+              </div>
+            </div>
+            <div class="field col-3">
+              <label for="q_date">Date</label>
+              <input class="input mono" id="q_date" type="date" required />
+            </div>
+
+            <div class="field col-4">
+              <label for="q_qty">Quantity</label>
+              <input class="input mono" id="q_qty" type="number" step="0.01" min="0" placeholder="e.g. 120" required />
+            </div>
+            <div class="field col-4">
+              <label for="q_unit">Unit</label>
+              <select id="q_unit">
+                <option>kWh</option>
+                <option>Wh</option>
+                <option>MWh</option>
+                <option>litre</option>
+                <option>ml</option>
+                <option>km</option>
+                <option>m</option>
+                <option>mi</option>
+                <option>kg</option>
+                <option>g</option>
+                <option>tonne</option>
+              </select>
+            </div>
+            <div class="field col-4">
+              <label for="q_result">Estimated CO2e</label>
+              <input class="input mono" id="q_result" placeholder="—" disabled />
+            </div>
+
+            <div class="field col-12">
+              <label for="q_notes">Notes</label>
+              <textarea id="q_notes" placeholder="Optional context"></textarea>
+            </div>
+
+            <div class="field col-12" style="display:flex; gap:10px; justify-content:flex-end">
+              <button class="btn" type="button" id="btnModalCancel">Cancel</button>
+              <button class="btn primary" type="submit" id="btnModalSave">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+      document.getElementById("apiBase").textContent = window.EcoTrackAPI.apiBase();
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EcoTrack • Reports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <h1>EcoTrack</h1>
+            <p>Carbon analytics</p>
+          </div>
+        </div>
+        <nav class="nav">
+          <a data-nav href="dashboard.html"><span class="dot"></span>Dashboard</a>
+          <a data-nav href="log.html"><span class="dot"></span>Log Activity</a>
+          <a data-nav href="reports.html" class="active"><span class="dot"></span>Reports</a>
+          <a data-nav href="settings.html"><span class="dot"></span>Settings</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="title">
+            <h2>Reports</h2>
+            <p>Filter activity logs and export audit-friendly CSV.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" id="btnExport" type="button">Export CSV</button>
+            <button class="btn danger" id="btnLogout" type="button">Logout</button>
+          </div>
+        </div>
+
+        <div id="reportsStatus" class="notice" style="display:none"></div>
+
+        <div class="grid">
+          <section class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Filters</h3>
+                <p class="hint">Narrow down by date range and scope; export uses these filters.</p>
+              </div>
+            </div>
+
+            <div class="form">
+              <div class="field col-4">
+                <label for="scope">Scope</label>
+                <select id="scope">
+                  <option value="">All</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+              <div class="field col-4">
+                <label for="start">Start date</label>
+                <input class="input mono" id="start" type="date" />
+              </div>
+              <div class="field col-4">
+                <label for="end">End date</label>
+                <input class="input mono" id="end" type="date" />
+              </div>
+              <div class="field col-8">
+                <label for="activity_type">Activity type (optional)</label>
+                <input class="input mono" id="activity_type" placeholder="e.g. grid_electricity_india" />
+              </div>
+              <div class="field col-4" style="align-self:end">
+                <button class="btn primary" id="btnApply" type="button">Apply</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card col-12">
+            <div class="card-head">
+              <div>
+                <h3>Audit log</h3>
+                <p class="hint">Who entered what and when (latest first).</p>
+              </div>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Scope</th>
+                  <th>Activity</th>
+                  <th>Quantity</th>
+                  <th>CO2e (kg)</th>
+                </tr>
+              </thead>
+              <tbody id="logsBody"></tbody>
+            </table>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/reports.js"></script>
+  </body>
+</html>
+
